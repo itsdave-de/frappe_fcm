@@ -1,47 +1,57 @@
 {
  "actions": [],
  "allow_rename": 1,
- "autoname": "field:user",
- "creation": "2022-02-06 15:46:19.185765",
+ "autoname": "format:MSG-{#####}",
+ "creation": "2025-01-21 12:05:16.340081",
+ "default_view": "List",
  "doctype": "DocType",
  "editable_grid": 1,
  "engine": "InnoDB",
  "field_order": [
   "user",
-  "device_name",
-  "device_token"
+  "all_users",
+  "subject",
+  "message",
+  "status"
  ],
  "fields": [
   {
    "fieldname": "user",
    "fieldtype": "Link",
    "label": "User",
-   "options": "User",
-   "reqd": 1,
-   "unique": 1
+   "options": "User Device"
   },
   {
-   "fieldname": "device_name",
-   "fieldtype": "Data",
-   "label": "Device Name"
+   "default": "0",
+   "fieldname": "all_users",
+   "fieldtype": "Check",
+   "label": "All users"
   },
   {
-   "fieldname": "device_token",
+   "fieldname": "subject",
    "fieldtype": "Data",
    "in_list_view": 1,
-   "label": "Device Token",
-   "length": 250,
-   "reqd": 1,
-   "unique": 1
+   "label": "Subject"
+  },
+  {
+   "fieldname": "message",
+   "fieldtype": "Long Text",
+   "label": "Message"
+  },
+  {
+   "fieldname": "status",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Status"
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-01-21 12:08:27.055737",
+ "modified": "2025-01-21 12:11:00.864327",
  "modified_by": "Administrator",
  "module": "Fcm Notification",
- "name": "User Device",
- "naming_rule": "By fieldname",
+ "name": "FCM Notification",
+ "naming_rule": "Expression",
  "owner": "Administrator",
  "permissions": [
   {
