@@ -104,8 +104,9 @@ app_license = "MIT"
 # }
 
 doc_events = {
-    "Notification Log": {
-        "before_insert": "fcm_notification.send_notification.send_notification"
+    "FCM Notification": {
+        "after_insert": "fcm_notification.utils.send_notification",
+        "on_update": "fcm_notification.utils.send_notification"
     }
 }
 
