@@ -10,7 +10,7 @@ def send_fcm_message(doc, method):
         return
 
     # Get the Firebase authentication token
-    fcm_server_key = frappe.db.get_single_value("FCM Settings", "server_key")
+    fcm_server_key = frappe.db.get_single_value("FCM Notification Settings", "server_key")
     if not fcm_server_key:
         frappe.throw("Firebase Server key not configured in FCM Settings.")
 
