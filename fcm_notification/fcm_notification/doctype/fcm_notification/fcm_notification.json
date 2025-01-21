@@ -39,15 +39,17 @@
    "label": "Message"
   },
   {
+   "default": "NEW",
    "fieldname": "status",
    "fieldtype": "Data",
+   "hidden": 1,
    "in_list_view": 1,
    "label": "Status"
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-01-21 12:11:00.864327",
+ "modified": "2025-01-21 14:04:07.102346",
  "modified_by": "Administrator",
  "module": "Fcm Notification",
  "name": "FCM Notification",
