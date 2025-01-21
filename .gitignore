@@ -4,3 +4,4 @@
 *.swp
 tags
 fcm_notification/docs/current
+.vs/

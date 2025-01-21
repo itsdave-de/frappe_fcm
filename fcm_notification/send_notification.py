@@ -1,65 +1,51 @@
 import frappe
 import requests
-import json
-from frappe import enqueue
-import re
 
+def send_fcm_message(doc, method):
+    """
+    Send message to Firebase when status is "NEW".
+    """
+    # Verify if the status is "NEW"
+    if doc.status != "NEW":
+        return
 
-def user_id(doc):
-    user_email = doc.for_user
-    user_device_id = frappe.get_all(
-        "User Device", filters={"user": user_email}, fields=["device_id"]
-    )
-    return user_device_id
+    # Get the Firebase authentication token
+    fcm_server_key = frappe.db.get_single_value("FCM Settings", "server_key")
+    if not fcm_server_key:
+        frappe.throw("Firebase Server key not configured in FCM Settings.")
 
-
-@frappe.whitelist()
-def send_notification(doc, event):
-    device_ids = user_id(doc)
-    for device_id in device_ids:
-        enqueue(
-            process_notification,
-            queue="default",
-            now=False,
-            device_id=device_id,
-            notification=doc,
-        )
-
-
-def convert_message(message):
-    CLEANR = re.compile("<.*?>")
-    cleanmessage = re.sub(CLEANR, "", message)
-    # cleantitle = re.sub(CLEANR, "",title)
-    return cleanmessage
-
-
-def process_notification(device_id, notification):
-    message = notification.email_content
-    title = notification.subject
-    if message:
-        message = convert_message(message)
-    if title:
-        title = convert_message(title)
-
-    url = "https://fcm.googleapis.com/fcm/send"
-    body = {
-        "to": device_id.device_id,
-        "notification": {"body": message, "title": title},
-        "data": {
-            "doctype": notification.document_type,
-            "docname": notification.document_name,
+    # Dados para envio
+    headers = {
+        "Authorization": f"key={fcm_server_key}",
+        "Content-Type": "application/json"
+    }
+    payload = {
+        "notification": {
+            "title": doc.subject,
+            "body": doc.message
         },
+        "priority": "high",
+        "to": "/topics/all" if doc.all_users else get_user_fcm_token(doc.user)
     }
 
-    server_key = frappe.db.get_single_value("FCM Notification Settings", "server_key")
-    auth = f"Bearer {server_key}"
-    req = requests.post(
-        url=url,
-        data=json.dumps(body),
-        headers={
-            "Authorization": auth,
-            "Content-Type": "application/json",
-            "Accept": "application/json",
-        },
-    )
-    frappe.log_error(req.text)
+    # POST request response
+    response = requests.post("https://fcm.googleapis.com/fcm/send", json=payload, headers=headers)
+
+    # Validate response
+    if response.status_code == 200:
+        frappe.db.set_value("FCM Notification", doc.name, "status", "SENT")
+        frappe.db.commit()
+    else:
+        frappe.log_error(
+            f"Error sending FCM message: {response.status_code} - {response.text}",
+            "FCM Notification"
+        )
+
+def get_user_fcm_token(user):
+    """
+    Get the token FCM of a specific user.
+    """
+    token = frappe.db.get_value("User Device", user, "fcm_token")
+    if not token:
+        frappe.throw(f"User {user} does not have a configured FCM Token.")
+    return token
