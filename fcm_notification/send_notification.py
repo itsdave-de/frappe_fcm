@@ -1,37 +1,66 @@
 import frappe
 import requests
+import json
+from google.oauth2 import service_account
+from google.auth.transport.requests import Request
 
 def send_fcm_message(doc, method):
     """
-    Send message to Firebase when status is "NEW".
+    Send a message to Firebase when the status is "NEW".
     """
     # Verify if the status is "NEW"
     if doc.status != "NEW":
         return
 
-    # Get the Firebase authentication token
-    fcm_server_key = frappe.db.get_single_value("FCM Notification Settings", "server_key")
-    if not fcm_server_key:
-        frappe.throw("Firebase Server key not configured in FCM Settings.")
+    # Get the path to the service account JSON file
+    service_account_json = frappe.db.get_single_value("FCM Notification Settings", "server_key")
+    if not service_account_json:
+        frappe.throw("The service account JSON content is not configured in FCM Notification Settings.")
 
-    # Dados para envio
+    # Load the service account credentials
+    try:
+        service_account_info = json.loads(service_account_json)
+        credentials = service_account.Credentials.from_service_account_info(
+            service_account_info,
+            scopes=["https://www.googleapis.com/auth/firebase.messaging"]
+        )
+    except Exception as e:
+        frappe.throw(f"Error loading service account credentials: {e}")
+
+    # Get the OAuth 2.0 access token
+    try:
+        credentials.refresh(Request())
+        access_token = credentials.token
+    except Exception as e:
+        frappe.throw(f"Erro ao obter o token de acesso OAuth 2.0: {e}")
+
+    # Build the message payload
+    message = {
+        "message": {
+            "notification": {
+                "title": doc.subject,
+                "body": doc.message
+            },
+            "token": get_user_fcm_token(doc.user) if not doc.all_users else None,
+            "topic": "all" if doc.all_users else None
+        }
+    }
+
+    # Remove keys with None value
+    message["message"] = {k: v for k, v in message["message"].items() if v is not None}
+
+    # Endpoint API HTTP v1
+    project_id = credentials.project_id
+    url = f"https://fcm.googleapis.com/v1/projects/{project_id}/messages:send"
+
     headers = {
-        "Authorization": f"key={fcm_server_key}",
-        "Content-Type": "application/json"
-    }
-    payload = {
-        "notification": {
-            "title": doc.subject,
-            "body": doc.message
-        },
-        "priority": "high",
-        "to": "/topics/all" if doc.all_users else get_user_fcm_token(doc.user)
+        "Authorization": f"Bearer {access_token}",
+        "Content-Type": "application/json; UTF-8",
     }
 
-    # POST request response
-    response = requests.post("https://fcm.googleapis.com/fcm/send", json=payload, headers=headers)
+    response = requests.post(url, headers=headers, data=json.dumps(message))
 
-    # Validate response
+    # Validate the response
     if response.status_code == 200:
         frappe.db.set_value("FCM Notification", doc.name, "status", "SENT")
         frappe.db.commit()
@@ -43,7 +72,7 @@ def send_fcm_message(doc, method):
 
 def get_user_fcm_token(user):
     """
-    Get the token FCM of a specific user.
+    Get the FCM token from the User Device doctype.
     """
     token = frappe.db.get_value("User Device", user, "fcm_token")
     if not token:
