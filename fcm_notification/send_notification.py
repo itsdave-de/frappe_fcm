@@ -74,7 +74,7 @@ def get_user_fcm_token(user):
     """
     Get the FCM token from the User Device doctype.
     """
-    token = frappe.db.get_value("User Device", user, "fcm_token")
+    token = frappe.db.get_value("User Device", user, "device_token")
     if not token:
         frappe.throw(f"User {user} does not have a configured FCM Token.")
     return token
