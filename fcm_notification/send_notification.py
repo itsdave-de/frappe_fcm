@@ -65,6 +65,7 @@ def send_fcm_message(doc, method):
         frappe.db.set_value("FCM Notification", doc.name, "status", "SENT")
         frappe.db.commit()
     else:
+        print(f"Error sending FCM message: {response.status_code} - {response.text}")
         frappe.log_error(
             f"Error sending FCM message: {response.status_code} - {response.text}",
             "FCM Notification"
