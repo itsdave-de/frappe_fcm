@@ -32,7 +32,7 @@ def send_fcm_message(doc, method):
         credentials.refresh(Request())
         access_token = credentials.token
     except Exception as e:
-        frappe.throw(f"Erro ao obter o token de acesso OAuth 2.0: {e}")
+        frappe.throw(f"Error getting OAuth 2.0 access token: {e}")
 
     # Build the message payload
     message = {
