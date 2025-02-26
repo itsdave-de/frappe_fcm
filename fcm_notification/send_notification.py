@@ -79,3 +79,11 @@ def get_user_fcm_token(user):
     if not token:
         frappe.throw(f"User {user} does not have a configured FCM Token.")
     return token
+
+def notification_handler(doc, method):
+    """
+    Handle the notification before validation.
+    """
+    print("DEBUG: Call the send_fcm_message function")
+    print(doc)
+    return
