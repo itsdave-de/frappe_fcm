@@ -1,7 +1,7 @@
 {
  "actions": [],
  "allow_rename": 1,
- "autoname": "field:user",
+ "autoname": "USERDEVICE-.#####",
  "creation": "2022-02-06 15:46:19.185765",
  "doctype": "DocType",
  "editable_grid": 1,
@@ -9,7 +9,11 @@
  "field_order": [
   "user",
   "device_name",
-  "device_token"
+  "device_token",
+  "device_id",
+  "device_model",
+  "os_version",
+  "platform"
  ],
  "fields": [
   {
@@ -17,8 +21,7 @@
    "fieldtype": "Link",
    "label": "User",
    "options": "User",
-   "reqd": 1,
-   "unique": 1
+   "reqd": 1
   },
   {
    "fieldname": "device_name",
@@ -33,15 +36,42 @@
    "length": 250,
    "reqd": 1,
    "unique": 1
+  },
+  {
+   "fieldname": "device_id",
+   "fieldtype": "Data",
+   "label": "Device ID",
+   "length": 250,
+   "reqd": 1,
+   "unique": 1
+  },
+  {
+   "fieldname": "device_model",
+   "fieldtype": "Data",
+   "label": "Device Model",
+   "length": 120
+  },
+  {
+   "fieldname": "os_version",
+   "fieldtype": "Data",
+   "label": "OS Version",
+   "length": 50
+  },
+  {
+   "fieldname": "platform",
+   "fieldtype": "Select",
+   "label": "Platform",
+   "options": "android\nios",
+   "reqd": 1
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-01-21 12:08:27.055737",
+ "modified": "2025-02-17 22:51:00.636933",
  "modified_by": "Administrator",
  "module": "Fcm Notification",
  "name": "User Device",
- "naming_rule": "By fieldname",
+ "naming_rule": "Expression (old style)",
  "owner": "Administrator",
  "permissions": [
   {

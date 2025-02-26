@@ -16,16 +16,18 @@
    "label": "Settings"
   },
   {
+   "description": "To obtain the google-services.json file for FCM, go to the Firebase Console, select your project, navigate to Project Settings (\u2699\ufe0f), scroll to the \"Your apps\" section, and download the file for your Android app.",
+   "documentation_url": "https://firebase.google.com/docs/android/setup",
    "fieldname": "server_key",
    "fieldtype": "Long Text",
-   "label": "Server Key",
+   "label": "Server Key (google-services.json)",
    "length": 250
   }
  ],
  "index_web_pages_for_search": 1,
  "issingle": 1,
  "links": [],
- "modified": "2025-01-17 13:40:27.660804",
+ "modified": "2025-01-22 03:08:39.459157",
  "modified_by": "Administrator",
  "module": "Fcm Notification",
  "name": "FCM Notification Settings",
