@@ -114,6 +114,7 @@ def process_document_for_fcm(doc, method):
     for notification in notifications:
         try:
             # Check the condition for the current document
+            print(f"DEBUG: Condition: {notification.condition}")
             if notification.condition:
                 context = {"doc": doc}
                 if not eval(notification.condition, context):
@@ -136,9 +137,11 @@ def process_document_for_fcm(doc, method):
             # Create FCM notification
             if notification.send_to_all_users:
                 create_fcm_notification(subject, message, None, True, doc)
+                print(f"DEBUG: Create FCM notification for all users")  
             else:
                 for recipient in recipients:
                     create_fcm_notification(subject, message, recipient, False, doc)
+                    print(f"DEBUG: Create FCM notification for recipient: {recipient}")
 
         except Exception as e:
             frappe.log_error(
