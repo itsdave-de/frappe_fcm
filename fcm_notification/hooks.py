@@ -112,7 +112,7 @@ doc_events = {
         "before_validate": "fcm_notification.send_notification.notification_handler"
     },
     "*": {
-        "after_save": "fcm_notification.send_notification.process_document_for_fcm"
+        "after_insert": "fcm_notification.send_notification.process_document_for_fcm"
     }
 }
 
