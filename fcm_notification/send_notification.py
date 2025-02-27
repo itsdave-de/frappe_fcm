@@ -109,6 +109,8 @@ def process_document_for_fcm(doc, method):
         fields=["*"]
     )
 
+    print(f"DEBUG: Notifications: {notifications}")
+
     for notification in notifications:
         try:
             # Check the condition for the current document
