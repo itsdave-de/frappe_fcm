@@ -155,6 +155,7 @@ def create_fcm_notification(subject, message, user=None, all_users=False, refere
     """
     Create FCM notification document
     """
+    print(f"DEBUG: Create FCM notification called")
     fcm_notification = frappe.get_doc({
         "doctype": "FCM Notification",
         "subject": subject,
