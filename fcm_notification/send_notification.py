@@ -125,7 +125,7 @@ def process_document_for_fcm(doc, method):
 
             # Process the message template
             subject = frappe.render_template(
-                notification.subject or notification.message_title or f"Document: {doc.document_type}",
+                notification.subject or notification.message_title or f"Document: {doc}",
                 context
             )
             message = frappe.render_template(notification.message, context)
