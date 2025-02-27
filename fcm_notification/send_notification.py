@@ -120,6 +120,8 @@ def process_document_for_fcm(doc, method):
                 if not eval(notification.condition, context):
                     continue
 
+            print(f"DEBUG: Condition ok")
+
             # Process the message template
             subject = frappe.render_template(notification.subject or notification.message_title, context)
             message = frappe.render_template(notification.message, context)
