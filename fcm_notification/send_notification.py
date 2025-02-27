@@ -98,6 +98,7 @@ def process_document_for_fcm(doc, method):
     """
     This function should be called when a monitored document is modified
     """
+    print(f"DEBUG: Process document for FCM called -> {doc.document_type}")
     # Search for all active FCM notifications for this document type
     notifications = frappe.get_all(
         "Notification",
