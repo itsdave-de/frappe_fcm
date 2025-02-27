@@ -123,7 +123,10 @@ def process_document_for_fcm(doc, method):
             print(f"DEBUG: Condition ok")
 
             # Process the message template
-            subject = frappe.render_template(notification.subject or notification.message_title, context)
+            subject = frappe.render_template(
+                notification.subject or notification.message_title or f"Document: {doc.document_type}",
+                context
+            )
             message = frappe.render_template(notification.message, context)
 
             # Determine recipients
