@@ -82,8 +82,74 @@ def get_user_fcm_token(user):
 
 def notification_handler(doc, method):
     """
-    Handle the notification before validation.
+    Handle the notification before validation and create FCM notification based on conditions.
     """
-    print("DEBUG: Call the send_fcm_message function")
-    print(doc)
-    return
+    if doc.channel != "FCM":
+        return
+
+    # Verify if the notification is enabled
+    if not doc.enabled:
+        return
+
+    # Get documents that meet the conditions
+    if doc.document_type:
+        try:
+            # Build filters based on conditions
+            filters = {}
+            if doc.condition:
+                if not eval(doc.condition, globals(), locals()):
+                    return
+
+            if doc.filters_json:
+                filters.update(json.loads(doc.filters_json))
+
+            # Search documents that meet the criteria
+            documents = frappe.get_all(
+                doc.document_type,
+                filters=filters,
+                fields=["*"]
+            )
+
+            for reference_doc in documents:
+                # Process the message template
+                context = {"doc": reference_doc}
+                subject = frappe.render_template(doc.subject or doc.message_title, context)
+                message = frappe.render_template(doc.message, context)
+
+                # Determine recipients
+                recipients = []
+                if not doc.send_to_all_users:
+                    for field in doc.recipients.split(","):
+                        field = field.strip()
+                        if hasattr(reference_doc, field):
+                            user = getattr(reference_doc, field)
+                            if user:
+                                recipients.append(user)
+
+                # Create FCM notification for each recipient or one for all
+                if doc.send_to_all_users:
+                    create_fcm_notification(subject, message, None, True, reference_doc)
+                else:
+                    for recipient in recipients:
+                        create_fcm_notification(subject, message, recipient, False, reference_doc)
+
+        except Exception as e:
+            frappe.log_error(f"Error processing FCM notification: {str(e)}", "FCM Notification Error")
+
+def create_fcm_notification(subject, message, user=None, all_users=False, reference_doc=None):
+    """
+    Create FCM notification document
+    """
+    fcm_notification = frappe.get_doc({
+        "doctype": "FCM Notification",
+        "subject": subject,
+        "message": message,
+        "user": user,
+        "all_users": all_users,
+        "status": "NEW",
+        "reference_doctype": reference_doc.doctype if reference_doc else None,
+        "reference_name": reference_doc.name if reference_doc else None
+    })
+    
+    fcm_notification.insert(ignore_permissions=True)
+    frappe.db.commit()
