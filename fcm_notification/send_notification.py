@@ -131,6 +131,7 @@ def process_document_for_fcm(doc, method):
 
             # Determine recipients
             recipients = []
+            print(f"DEBUG: Recipients: {notification.recipients}")
             if notification.recipients:
                 for field in notification.recipients.split(","):
                     field = field.strip()
