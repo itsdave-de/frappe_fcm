@@ -91,50 +91,58 @@ def notification_handler(doc, method):
     if not doc.enabled:
         return
 
-    # Get documents that meet the conditions
-    if doc.document_type:
+    if not doc.document_type:
+        frappe.throw("Document Type é obrigatório para notificações FCM")
+
+def process_document_for_fcm(doc, method):
+    """
+    Esta função deve ser chamada quando um documento monitorado é modificado
+    """
+    # Buscar todas as notificações FCM ativas para este tipo de documento
+    notifications = frappe.get_all(
+        "Notification",
+        filters={
+            "enabled": 1,
+            "channel": "FCM",
+            "document_type": doc.doctype
+        },
+        fields=["*"]
+    )
+
+    for notification in notifications:
         try:
-            # Build filters based on conditions
-            filters = {}
-            if doc.condition:
-                if not eval(doc.condition, globals(), locals()):
-                    return
+            # Check the condition for the current document
+            if notification.condition:
+                context = {"doc": doc}
+                if not eval(notification.condition, context):
+                    continue
 
-            if doc.filters_json:
-                filters.update(json.loads(doc.filters_json))
+            # Process the message template
+            subject = frappe.render_template(notification.subject or notification.message_title, context)
+            message = frappe.render_template(notification.message, context)
 
-            # Search documents that meet the criteria
-            documents = frappe.get_all(
-                doc.document_type,
-                filters=filters,
-                fields=["*"]
-            )
+            # Determine recipients
+            recipients = []
+            if not notification.send_to_all_users:
+                for field in notification.recipients.split(","):
+                    field = field.strip()
+                    if hasattr(doc, field):
+                        user = getattr(doc, field)
+                        if user:
+                            recipients.append(user)
 
-            for reference_doc in documents:
-                # Process the message template
-                context = {"doc": reference_doc}
-                subject = frappe.render_template(doc.subject or doc.message_title, context)
-                message = frappe.render_template(doc.message, context)
-
-                # Determine recipients
-                recipients = []
-                if not doc.send_to_all_users:
-                    for field in doc.recipients.split(","):
-                        field = field.strip()
-                        if hasattr(reference_doc, field):
-                            user = getattr(reference_doc, field)
-                            if user:
-                                recipients.append(user)
-
-                # Create FCM notification for each recipient or one for all
-                if doc.send_to_all_users:
-                    create_fcm_notification(subject, message, None, True, reference_doc)
-                else:
-                    for recipient in recipients:
-                        create_fcm_notification(subject, message, recipient, False, reference_doc)
+            # Create FCM notification
+            if notification.send_to_all_users:
+                create_fcm_notification(subject, message, None, True, doc)
+            else:
+                for recipient in recipients:
+                    create_fcm_notification(subject, message, recipient, False, doc)
 
         except Exception as e:
-            frappe.log_error(f"Error processing FCM notification: {str(e)}", "FCM Notification Error")
+            frappe.log_error(
+                f"Error processing FCM notification {notification.name} for document {doc.name}: {str(e)}",
+                "FCM Notification Error"
+            )
 
 def create_fcm_notification(subject, message, user=None, all_users=False, reference_doc=None):
     """
