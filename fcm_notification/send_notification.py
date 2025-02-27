@@ -131,22 +131,21 @@ def process_document_for_fcm(doc, method):
 
             # Determine recipients
             recipients = []
-            if not notification.send_to_all_users:
+            if notification.recipients:
                 for field in notification.recipients.split(","):
                     field = field.strip()
                     if hasattr(doc, field):
                         user = getattr(doc, field)
                         if user:
                             recipients.append(user)
-
-            # Create FCM notification
-            if notification.send_to_all_users:
-                create_fcm_notification(subject, message, None, True, doc)
-                print(f"DEBUG: Create FCM notification for all users")  
-            else:
+                # Create FCM notification for each recipient
                 for recipient in recipients:
                     create_fcm_notification(subject, message, recipient, False, doc)
                     print(f"DEBUG: Create FCM notification for recipient: {recipient}")
+            else:
+                # Create FCM notification for all users
+                create_fcm_notification(subject, message, None, True, doc)
+                print(f"DEBUG: Create FCM notification for all users")  
 
         except Exception as e:
             frappe.log_error(
