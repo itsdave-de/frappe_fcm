@@ -92,13 +92,13 @@ def notification_handler(doc, method):
         return
 
     if not doc.document_type:
-        frappe.throw("Document Type é obrigatório para notificações FCM")
+        frappe.throw("Document Type is required for FCM notifications")
 
 def process_document_for_fcm(doc, method):
     """
-    Esta função deve ser chamada quando um documento monitorado é modificado
+    This function should be called when a monitored document is modified
     """
-    # Buscar todas as notificações FCM ativas para este tipo de documento
+    # Search for all active FCM notifications for this document type
     notifications = frappe.get_all(
         "Notification",
         filters={
