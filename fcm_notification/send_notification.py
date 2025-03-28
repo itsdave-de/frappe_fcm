@@ -48,8 +48,7 @@ def send_fcm_message(doc, method):
                 "title": doc.subject,
                 "body": doc.message
             },
-            "token": fcm_tokens if not doc.all_users else None,
-            "topic": "all" if doc.all_users else None
+            "token": fcm_tokens if not doc.all_users else None
         }
     }
 
