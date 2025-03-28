@@ -36,10 +36,10 @@ def send_fcm_message(doc, method):
 
     if doc.all_users:
         # Get all users with FCM token
-        users = frappe.get_all("User Device", filters={"enabled": 1}, fields=["user"])
-        fcm_tokens = [user.user for user in users]
+        users = frappe.get_all("User Device", fields=["device_token"])
+        fcm_tokens = [user.device_token for user in users]
     else:
-        fcm_tokens = [get_user_fcm_token(doc.user)]
+        fcm_tokens = [get_user_fcm_token(doc.device_token)]
 
     # Build the message payload
     message = {
