@@ -110,6 +110,10 @@ def process_document_for_fcm(doc, method):
         fields=["*"]
     )
 
+    # If there are no notifications, return
+    if not notifications:
+        return
+
     print(f"DEBUG: Notifications: {notifications}")
 
     for notification in notifications:

@@ -112,7 +112,23 @@ doc_events = {
         "before_validate": "fcm_notification.send_notification.notification_handler"
     },
     "*": {
-        "after_insert": "fcm_notification.send_notification.process_document_for_fcm"
+        "before_insert": "fcm_notification.send_notification.process_document_for_fcm",
+        "after_insert": "fcm_notification.send_notification.process_document_for_fcm",
+        "before_validate": "fcm_notification.send_notification.process_document_for_fcm",
+        "after_validate": "fcm_notification.send_notification.process_document_for_fcm",
+        "before_save": "fcm_notification.send_notification.process_document_for_fcm",
+        "after_save": "fcm_notification.send_notification.process_document_for_fcm",
+        "before_submit": "fcm_notification.send_notification.process_document_for_fcm",
+        "after_submit": "fcm_notification.send_notification.process_document_for_fcm",
+        "before_cancel": "fcm_notification.send_notification.process_document_for_fcm",
+        "after_cancel": "fcm_notification.send_notification.process_document_for_fcm",
+        "before_delete": "fcm_notification.send_notification.process_document_for_fcm",
+        "after_delete": "fcm_notification.send_notification.process_document_for_fcm",
+        "before_update_after_submit": "fcm_notification.send_notification.process_document_for_fcm",
+        "after_update_after_submit": "fcm_notification.send_notification.process_document_for_fcm",
+        "on_update": "fcm_notification.send_notification.process_document_for_fcm",
+        "on_trash": "fcm_notification.send_notification.process_document_for_fcm",
+        "on_change": "fcm_notification.send_notification.process_document_for_fcm"
     }
 }
 
