@@ -34,13 +34,6 @@ def send_fcm_message(doc, method):
     except Exception as e:
         frappe.throw(f"Error getting OAuth 2.0 access token: {e}")
 
-    if doc.all_users:
-        # Get all users with FCM token
-        users = frappe.get_all("User Device", fields=["device_token"])
-        fcm_tokens = [user.device_token for user in users]
-    else:
-        fcm_tokens = [get_user_fcm_token(doc.device_token)]
-
     # Build the message payload
     message = {
         "message": {
@@ -48,7 +41,8 @@ def send_fcm_message(doc, method):
                 "title": doc.subject,
                 "body": doc.message
             },
-            "token": fcm_tokens if not doc.all_users else None
+            "token": get_user_fcm_token(doc.user) if not doc.all_users else None,
+            "topic": "all" if doc.all_users else None
         }
     }
 
