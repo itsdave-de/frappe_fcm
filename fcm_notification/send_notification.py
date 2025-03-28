@@ -34,6 +34,13 @@ def send_fcm_message(doc, method):
     except Exception as e:
         frappe.throw(f"Error getting OAuth 2.0 access token: {e}")
 
+    if doc.all_users:
+        # Get all users with FCM token
+        users = frappe.get_all("User Device", filters={"enabled": 1}, fields=["user"])
+        fcm_tokens = [user.user for user in users]
+    else:
+        fcm_tokens = [get_user_fcm_token(doc.user)]
+
     # Build the message payload
     message = {
         "message": {
@@ -41,7 +48,7 @@ def send_fcm_message(doc, method):
                 "title": doc.subject,
                 "body": doc.message
             },
-            "token": get_user_fcm_token(doc.user) if not doc.all_users else None,
+            "token": fcm_tokens if not doc.all_users else None,
             "topic": "all" if doc.all_users else None
         }
     }
@@ -125,7 +132,7 @@ def process_document_for_fcm(doc, method):
                 if not eval(notification.condition, context):
                     continue
 
-            print(f"DEBUG: Condition ok")
+            print("DEBUG: Condition ok")
 
             # Process the message template
             subject = frappe.render_template(
@@ -151,7 +158,7 @@ def process_document_for_fcm(doc, method):
             else:
                 # Create FCM notification for all users
                 create_fcm_notification(subject, message, None, True, doc)
-                print(f"DEBUG: Create FCM notification for all users")  
+                print("DEBUG: Create FCM notification for all users")  
 
         except Exception as e:
             frappe.log_error(
@@ -163,7 +170,7 @@ def create_fcm_notification(subject, message, user=None, all_users=False, refere
     """
     Create FCM notification document
     """
-    print(f"DEBUG: Create FCM notification called")
+    print("DEBUG: Create FCM notification called")
     fcm_notification = frappe.get_doc({
         "doctype": "FCM Notification",
         "subject": subject,
