@@ -40,7 +40,13 @@ def send_fcm_message(doc, method):
         frappe.throw(f"Error getting OAuth 2.0 access token: {e}")
 
     users_to_notify = []
-    if doc.all_users:
+    # if doctype is HD Ticket, get users from group field
+    if doc.doctype == "HD Ticket":
+        hd_doc = frappe.get_doc("HD Ticket", doc.name)
+        hd_team = frappe.get_doc("HD Team", hd_doc.agent_group)
+        if hd_team.get('users'):
+            users_to_notify = [get_user_fcm_token(i.user) for i in hd_team.users]
+    elif doc.all_users:
         for user in frappe.get_all("User Device", fields=['device_token']):
             users_to_notify.append(user.device_token)
     else:
