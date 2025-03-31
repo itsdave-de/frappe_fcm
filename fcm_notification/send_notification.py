@@ -167,9 +167,9 @@ def process_document_for_fcm(doc, method):
                     recp['recipients'] = [{'owner': i.user} for i in hd_team.users]
             else:
                 recp = frappe.get_doc("Notification", notification.name, fields=['recipients']).as_dict()
-            print(f"DEBUG: Recipients: {recp.recipients}")
-            if recp.recipients:
-                for recipient_array in recp.recipients:
+            print(f"DEBUG: Recipients: {recp.get('recipients')}")
+            if recp.get('recipients'):
+                for recipient_array in recp.get('recipients'):
                     # Get device from User
                     user_device = frappe.get_value("User Device", {'user': recipient_array.owner}, ['name'])
                     # Create FCM notification for each recipient
