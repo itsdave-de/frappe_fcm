@@ -40,13 +40,7 @@ def send_fcm_message(doc, method):
         frappe.throw(f"Error getting OAuth 2.0 access token: {e}")
 
     users_to_notify = []
-    # if doctype is HD Ticket, get users from group field
-    if doc.doctype == "HD Ticket":
-        hd_doc = frappe.get_doc("HD Ticket", doc.name)
-        hd_team = frappe.get_doc("HD Team", hd_doc.agent_group)
-        if hd_team.get('users'):
-            users_to_notify = [get_user_fcm_token(i.user) for i in hd_team.users]
-    elif doc.all_users:
+    if doc.all_users:
         for user in frappe.get_all("User Device", fields=['device_token']):
             users_to_notify.append(user.device_token)
     else:
@@ -155,10 +149,18 @@ def process_document_for_fcm(doc, method):
             print(f"DEBUG: Message: {message}")
 
             # Determine recipients
-            recp = frappe.get_doc("Notification", notification.name, fields=['recipients'])
-            print(f"DEBUG: Recipients: {recp.as_dict().recipients}")
+            # if doctype is HD Ticket, get users from agent_group field
+            if doc.doctype == "HD Ticket":
+                recp = {}
+                hd_doc = frappe.get_doc("HD Ticket", doc.name)
+                hd_team = frappe.get_doc("HD Team", hd_doc.agent_group)
+                if hd_team.get('users'):
+                    recp['recipients'] = [{'owner': get_user_fcm_token(i.user)} for i in hd_team.users]
+            else:
+                recp = frappe.get_doc("Notification", notification.name, fields=['recipients']).as_dict()
+            print(f"DEBUG: Recipients: {recp.recipients}")
             if recp.recipients:
-                for recipient_array in recp.as_dict().recipients:
+                for recipient_array in recp.recipients:
                     # Get device from User
                     user_device = frappe.get_value("User Device", {'user': recipient_array.owner}, ['name'])
                     # Create FCM notification for each recipient
