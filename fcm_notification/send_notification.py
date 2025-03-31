@@ -174,7 +174,7 @@ def process_document_for_fcm(doc, method):
                     user_device = frappe.get_value("User Device", {'user': recipient_array.get('owner')}, ['name'])
                     # Create FCM notification for each recipient
                     if user_device:
-                        create_fcm_notification(subject, message, user_device.name, False, doc)
+                        create_fcm_notification(subject, message, user_device.get('name'), False, doc)
                         print(f"DEBUG: Create FCM notification for recipient: {recipient_array.get('owner')}")
             else:
                 # Create FCM notification for all users
