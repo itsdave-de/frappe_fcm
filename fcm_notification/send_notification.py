@@ -164,7 +164,7 @@ def process_document_for_fcm(doc, method):
                 doc = frappe.get_doc("HD Ticket", doc.name)
                 hd_team = frappe.get_doc("HD Team", doc.agent_group)
                 if hd_team.get('users'):
-                    recp['recipients'] = [{'owner': i.user} for i in hd_team.users]
+                    recp['recipients'] = [{'owner': i.get('user')} for i in hd_team.get('users')]
             else:
                 recp = frappe.get_doc("Notification", notification.name, fields=['recipients']).as_dict()
             print(f"DEBUG: Recipients: {recp.get('recipients')}")
