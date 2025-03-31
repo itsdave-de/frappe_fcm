@@ -12,6 +12,10 @@ def send_fcm_message(doc, method):
     if doc.status != "NEW":
         return
 
+    # Verify if the user has a configured FCM Token
+    if not doc.all_users and not get_user_fcm_token(doc.user):
+        return
+
     # Get the path to the service account JSON file
     service_account_json = frappe.db.get_single_value("FCM Notification Settings", "server_key")
     if not service_account_json:
@@ -41,8 +45,8 @@ def send_fcm_message(doc, method):
                 "title": doc.subject,
                 "body": doc.message
             },
-            "token": get_user_fcm_token(doc.user) if not doc.all_users else None,
-            "topic": "all" if doc.all_users else None
+            "token": get_user_fcm_token(doc.user),
+            "topic": None
         }
     }
 
