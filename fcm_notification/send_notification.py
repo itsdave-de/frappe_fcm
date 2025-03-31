@@ -14,6 +14,7 @@ def send_fcm_message(doc, method):
 
     # Verify if the user has a configured FCM Token
     if not doc.all_users and not get_user_fcm_token(doc.user):
+        print("DEBUG: User does not have a configured FCM Token, exiting...")
         return
 
     # Get the path to the service account JSON file
@@ -81,7 +82,7 @@ def get_user_fcm_token(user):
     """
     token = frappe.db.get_value("User Device", user, "device_token")
     if not token:
-        frappe.throw(f"User {user} does not have a configured FCM Token.")
+        return False
     return token
 
 def notification_handler(doc, method):
