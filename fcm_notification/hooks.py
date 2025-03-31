@@ -114,8 +114,8 @@ doc_events = {
     "*": {
         #"before_insert": "fcm_notification.send_notification.process_document_for_fcm",
         "after_insert": "fcm_notification.send_notification.process_document_for_fcm",
-        "before_validate": "fcm_notification.send_notification.process_document_for_fcm",
-        "after_validate": "fcm_notification.send_notification.process_document_for_fcm",
+        #"before_validate": "fcm_notification.send_notification.process_document_for_fcm",
+        #"after_validate": "fcm_notification.send_notification.process_document_for_fcm",
         #"before_save": "fcm_notification.send_notification.process_document_for_fcm",
         "after_save": "fcm_notification.send_notification.process_document_for_fcm",
         #"before_submit": "fcm_notification.send_notification.process_document_for_fcm",
