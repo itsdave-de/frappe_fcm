@@ -13,7 +13,7 @@ def send_fcm_message(doc, method):
         return
 
     # Verify if the user has a configured FCM Token
-    if not doc.all_users and not get_user_fcm_token(doc.user):
+    if not doc.all_users and not frappe.db.get_value("User Device", doc.user, "device_token"):
         print("DEBUG: User does not have a configured FCM Token, exiting...")
         return
 
@@ -80,10 +80,7 @@ def get_user_fcm_token(user):
     """
     Get the FCM token from the User Device doctype.
     """
-    token = frappe.db.get_value("User Device", user, "device_token")
-    if not token:
-        return False
-    return token
+    return frappe.db.get_value("User Device", user, "device_token")
 
 def notification_handler(doc, method):
     """
@@ -148,9 +145,14 @@ def process_document_for_fcm(doc, method):
             print(f"DEBUG: Recipients: {recp.as_dict().recipients}")
             if recp.recipients:
                 for recipient_array in recp.as_dict().recipients:
+                    # Get device from User
+                    user_device = frappe.get_doc("User Device", recipient_array.owner)
                     # Create FCM notification for each recipient
-                    create_fcm_notification(subject, message, recipient_array.owner, False, doc)
-                    print(f"DEBUG: Create FCM notification for recipient: {recipient_array.owner}")
+                    if user_device:
+                        create_fcm_notification(subject, message, user_device.name, False, doc)
+                        print(f"DEBUG: Create FCM notification for recipient: {recipient_array.owner}")
+                    else:
+                        print(f"DEBUG: User {recipient_array.owner} does not have a configured FCM Token, skipping...")
             else:
                 # Create FCM notification for all users
                 create_fcm_notification(subject, message, None, True, doc)
