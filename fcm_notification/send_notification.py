@@ -129,7 +129,7 @@ def process_document_for_fcm(doc, method):
     print(f"DEBUG: Notifications: {notifications}")
 
     for notification in notifications:
-        #try:
+        try:
             # Check the condition for the current document
             print(f"DEBUG: Condition: {notification.condition}")
             if notification.condition:
@@ -174,18 +174,18 @@ def process_document_for_fcm(doc, method):
                     user_device = frappe.get_value("User Device", {'user': recipient_array.get('owner')}, 'name')
                     # Create FCM notification for each recipient
                     if user_device:
-                        create_fcm_notification(subject, message, user_device.get('name'), False, doc)
+                        create_fcm_notification(subject, message, user_device, False, doc)
                         print(f"DEBUG: Create FCM notification for recipient: {recipient_array.get('owner')}")
             else:
                 # Create FCM notification for all users
                 create_fcm_notification(subject, message, None, True, doc)
                 print("DEBUG: Create FCM notification for all users")  
 
-        #except Exception as e:
-        #    frappe.log_error(
-        #        f"Error processing FCM notification {notification.name} for document {doc.name}: {str(e)}",
-        #        "FCM Notification Error"
-        #    )
+        except Exception as e:
+            frappe.log_error(
+                f"Error processing FCM notification {notification.name} for document {doc.name}: {str(e)}",
+                "FCM Notification Error"
+            )
 
 def create_fcm_notification(subject, message, user=None, all_users=False, reference_doc=None):
     """
