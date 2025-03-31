@@ -139,19 +139,13 @@ def process_document_for_fcm(doc, method):
             message = frappe.render_template(notification.message, context)
 
             # Determine recipients
-            recipients = []
-            print(f"DEBUG: Recipients: {notification.recipients}")
-            if notification.recipients:
-                for field in notification.recipients.split(","):
-                    field = field.strip()
-                    if hasattr(doc, field):
-                        user = getattr(doc, field)
-                        if user:
-                            recipients.append(user)
-                # Create FCM notification for each recipient
-                for recipient in recipients:
-                    create_fcm_notification(subject, message, recipient, False, doc)
-                    print(f"DEBUG: Create FCM notification for recipient: {recipient}")
+            recp = frappe.get_doc("Notification", notification.name, fields=['recipients'])
+            print(f"DEBUG: Recipients: {recp.recipients.as_dict()}")
+            if recp.recipients:
+                for recipient_array in recp.as_dict().recipients:
+                    # Create FCM notification for each recipient
+                    create_fcm_notification(subject, message, recipient_array.owner, False, doc)
+                    print(f"DEBUG: Create FCM notification for recipient: {recipient_array.owner}")
             else:
                 # Create FCM notification for all users
                 create_fcm_notification(subject, message, None, True, doc)
