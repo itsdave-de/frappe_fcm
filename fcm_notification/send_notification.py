@@ -1,6 +1,7 @@
 import frappe
 import requests
 import json
+import time
 from google.oauth2 import service_account
 from google.auth.transport.requests import Request
 
@@ -152,8 +153,16 @@ def process_document_for_fcm(doc, method):
             # if doctype is HD Ticket, get users from agent_group field
             if doc.doctype == "HD Ticket":
                 recp = {}
-                hd_doc = frappe.get_doc("HD Ticket", doc.name)
-                hd_team = frappe.get_doc("HD Team", hd_doc.agent_group)
+                # Wait for the HD Ticket to be created (15 seconds max)
+                current_time = time.time()
+                while not frappe.get_value("HD Ticket", doc.name, 'name'):
+                    time.sleep(1)
+                    print(f"DEBUG: Waiting for HD Ticket {doc.name} to be created...")
+                    if time.time() - current_time > 15:
+                        frappe.throw(f"HD Ticket {doc.name} not found after 15 seconds")
+                        return
+                doc = frappe.get_doc("HD Ticket", doc.name)
+                hd_team = frappe.get_doc("HD Team", doc.agent_group)
                 if hd_team.get('users'):
                     recp['recipients'] = [{'owner': i.user} for i in hd_team.users]
             else:
