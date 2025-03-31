@@ -39,42 +39,50 @@ def send_fcm_message(doc, method):
     except Exception as e:
         frappe.throw(f"Error getting OAuth 2.0 access token: {e}")
 
-    # Build the message payload
-    message = {
-        "message": {
-            "notification": {
-                "title": doc.subject,
-                "body": doc.message
-            },
-            "token": get_user_fcm_token(doc.user),
-            "topic": None
-        }
-    }
-
-    # Remove keys with None value
-    message["message"] = {k: v for k, v in message["message"].items() if v is not None}
-
-    # Endpoint API HTTP v1
-    project_id = credentials.project_id
-    url = f"https://fcm.googleapis.com/v1/projects/{project_id}/messages:send"
-
-    headers = {
-        "Authorization": f"Bearer {access_token}",
-        "Content-Type": "application/json; UTF-8",
-    }
-
-    response = requests.post(url, headers=headers, data=json.dumps(message))
-
-    # Validate the response
-    if response.status_code == 200:
-        frappe.db.set_value("FCM Notification", doc.name, "status", "SENT")
-        frappe.db.commit()
+    users_to_notify = []
+    if doc.all_users:
+        for user in frappe.get_all("User Device", fields=['device_token']):
+            users_to_notify.append(user.device_token)
     else:
-        print(f"Error sending FCM message: {response.status_code} - {response.text}")
-        frappe.log_error(
-            f"Error sending FCM message: {response.status_code} - {response.text}",
-            "FCM Notification"
-        )
+        users_to_notify.append(get_user_fcm_token(doc.user))
+
+    for token_to_notify in users_to_notify:
+        # Build the message payload
+        message = {
+            "message": {
+                "notification": {
+                    "title": doc.subject,
+                    "body": doc.message
+                },
+                "token": token_to_notify,
+                "topic": None
+            }
+        }
+
+        # Remove keys with None value
+        message["message"] = {k: v for k, v in message["message"].items() if v is not None}
+
+        # Endpoint API HTTP v1
+        project_id = credentials.project_id
+        url = f"https://fcm.googleapis.com/v1/projects/{project_id}/messages:send"
+
+        headers = {
+            "Authorization": f"Bearer {access_token}",
+            "Content-Type": "application/json; UTF-8",
+        }
+
+        response = requests.post(url, headers=headers, data=json.dumps(message))
+
+        # Validate the response
+        if response.status_code == 200:
+            frappe.db.set_value("FCM Notification", doc.name, "status", "SENT")
+            frappe.db.commit()
+        else:
+            print(f"Error sending FCM message: {response.status_code} - {response.text}")
+            frappe.log_error(
+                f"Error sending FCM message: {response.status_code} - {response.text}",
+                "FCM Notification"
+            )
 
 def get_user_fcm_token(user):
     """
