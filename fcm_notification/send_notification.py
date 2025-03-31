@@ -116,6 +116,7 @@ def process_document_for_fcm(doc, method):
 
     # If there are no notifications, return
     if not notifications:
+        print("DEBUG: No notifications found, exiting...")
         return
 
     print(f"DEBUG: Notifications: {notifications}")
@@ -138,9 +139,12 @@ def process_document_for_fcm(doc, method):
             )
             message = frappe.render_template(notification.message, context)
 
+            print(f"DEBUG: Subject: {subject}")
+            print(f"DEBUG: Message: {message}")
+
             # Determine recipients
             recp = frappe.get_doc("Notification", notification.name, fields=['recipients'])
-            print(f"DEBUG: Recipients: {recp.recipients.as_dict()}")
+            print(f"DEBUG: Recipients: {recp.as_dict().recipients}")
             if recp.recipients:
                 for recipient_array in recp.as_dict().recipients:
                     # Create FCM notification for each recipient
