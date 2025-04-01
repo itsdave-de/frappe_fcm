@@ -161,8 +161,8 @@ def process_document_for_fcm(doc, method):
                     if time.time() - current_time > 15:
                         frappe.throw(f"HD Ticket {doc.name} not found after 15 seconds")
                         return
-                doc = frappe.get_doc("HD Ticket", doc.name)
-                hd_team = frappe.get_doc("HD Team", doc.agent_group)
+                doc_hd_ticket = frappe.get_doc("HD Ticket", doc.name)
+                hd_team = frappe.get_doc("HD Team", doc_hd_ticket.agent_group)
                 if hd_team.get('users'):
                     recp['recipients'] = [{'owner': i.get('user')} for i in hd_team.get('users')]
             else:
