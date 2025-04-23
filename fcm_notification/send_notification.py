@@ -47,7 +47,8 @@ def send_fcm_message(doc, method):
     else:
         users_to_notify.append(get_user_fcm_token(doc.user))
 
-    frappe.log_error(f"DEBUG: Users to notify({len(users_to_notify)}): {users_to_notify}", "FCM Notification")
+    with open("/tmp/users_to_notify.txt", "w+") as f:
+        f.write(f"Users to notify({len(users_to_notify)}): {users_to_notify}")
 
     for token_to_notify in users_to_notify:
         # Build the message payload
