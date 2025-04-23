@@ -87,8 +87,8 @@ def send_fcm_message(doc, method):
                 f"Error sending FCM message: {response.status_code} - {response.text}",
                 "FCM Notification"
             )
-    with open("/tmp/users_to_notify.txt", "w+") as f:
-        f.write(f"User to notify({token_to_notify})}): Response: {response.status_code} - {response.text}")
+        with open("/tmp/users_to_notify.txt", "w+") as f:
+            f.write(f"User to notify({token_to_notify}): Response: {response.status_code} - {response.text}")
 
 def get_user_fcm_token(user):
     """
