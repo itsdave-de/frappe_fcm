@@ -57,7 +57,7 @@ app_license = "MIT"
 # ------------
 
 # before_install = "fcm_notification.install.before_install"
-# after_install = "fcm_notification.install.after_install"
+after_install = "fcm_notification.install.after_install"
 
 # Uninstallation
 # ------------
@@ -111,23 +111,12 @@ doc_events = {
         "before_validate": "fcm_notification.send_notification.notification_handler"
     },
     "*": {
-        #"before_insert": "fcm_notification.send_notification.process_document_for_fcm",
         "after_insert": "fcm_notification.send_notification.process_document_for_fcm",
-        #"before_validate": "fcm_notification.send_notification.process_document_for_fcm",
-        #"after_validate": "fcm_notification.send_notification.process_document_for_fcm",
-        #"before_save": "fcm_notification.send_notification.process_document_for_fcm",
         "after_save": "fcm_notification.send_notification.process_document_for_fcm",
-        #"before_submit": "fcm_notification.send_notification.process_document_for_fcm",
         "after_submit": "fcm_notification.send_notification.process_document_for_fcm",
-        #"before_cancel": "fcm_notification.send_notification.process_document_for_fcm",
         "after_cancel": "fcm_notification.send_notification.process_document_for_fcm",
-        #"before_delete": "fcm_notification.send_notification.process_document_for_fcm",
         "after_delete": "fcm_notification.send_notification.process_document_for_fcm",
-        #"before_update_after_submit": "fcm_notification.send_notification.process_document_for_fcm",
         "after_update_after_submit": "fcm_notification.send_notification.process_document_for_fcm",
-        #"on_update": "fcm_notification.send_notification.process_document_for_fcm",
-        #"on_trash": "fcm_notification.send_notification.process_document_for_fcm",
-        #"on_change": "fcm_notification.send_notification.process_document_for_fcm"
     }
 }
 
@@ -181,21 +170,16 @@ doc_events = {
 
 user_data_fields = [
     {
-        "doctype": "{doctype_1}",
-        "filter_by": "{filter_by}",
-        "redact_fields": ["{field_1}", "{field_2}"],
+        "doctype": "User Device",
+        "filter_by": "user",
+        "redact_fields": ["device_token", "device_id"],
         "partial": 1,
     },
     {
-        "doctype": "{doctype_2}",
-        "filter_by": "{filter_by}",
+        "doctype": "FCM Notification",
+        "filter_by": "user",
         "partial": 1,
     },
-    {
-        "doctype": "{doctype_3}",
-        "strict": False,
-    },
-    {"doctype": "{doctype_4}"},
 ]
 
 # Authentication and authorization

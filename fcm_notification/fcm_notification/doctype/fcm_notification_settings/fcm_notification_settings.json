@@ -16,11 +16,11 @@
    "label": "Settings"
   },
   {
-   "description": "To obtain the google-services.json file for FCM, go to the Firebase Console, select your project, navigate to Project Settings (\u2699\ufe0f), scroll to the \"Your apps\" section, and download the file for your Android app.",
-   "documentation_url": "https://firebase.google.com/docs/android/setup",
+   "description": "Paste the contents of the Firebase service account JSON file. To obtain it: go to Firebase Console > Project Settings > Service Accounts > Generate new private key. This is NOT the google-services.json (which is for client-side Android apps).",
+   "documentation_url": "https://firebase.google.com/docs/admin/setup#initialize_the_sdk_in_non-google_environments",
    "fieldname": "server_key",
    "fieldtype": "Long Text",
-   "label": "Server Key (google-services.json)",
+   "label": "Service Account Key (JSON)",
    "length": 250
   }
  ],
@@ -44,7 +44,7 @@
    "write": 1
   }
  ],
- "sort_field": "modified",
+ "sort_field": "creation",
  "sort_order": "DESC",
  "states": []
 }
