@@ -1,28 +1,44 @@
-# FCM Notification for ERPNext
-Send notifications created in Frappe or ERPNext as push notication via Firebase Cloud Message(FCM)
+# FCM Notification for Frappe
 
-### Steps to use the app:
+Send notifications created in Frappe as push notifications via Firebase Cloud Messaging (FCM).
 
-1. Install the app into your site. [(Refer)](https://frappeframework.com/docs/v13/user/en/bench/frappe-commands#app-installation)
+Uses the FCM v1 HTTP API with OAuth 2.0 service account credentials.
 
-2. Create a new Server Script with values given below<br />
-  i. Script Type: **DocType Event**<br />
-  ii. Reference Document Type: **Notification Log**<br />
-  iii. DocType Event: **Before Insert**<br />
-  iv. Script: `frappe.call("fcm_notification.send_notification.send_notification", doc=doc)`<br />
-To learn more about server scripts [see this link.](https://frappeframework.com/docs/v13/user/en/desk/scripting/server-script) 
+## Installation
 
-2. Add your FCM server key in FCM Notification Settings. [(Refer)](https://intercom.help/push-monkey/en/articles/1649592-how-to-set-up-your-fcm-keys-previously-called-gcm)
+```bash
+bench get-app https://github.com/user/fcm_notification
+bench --site your-site install-app fcm_notification
+```
 
-3. Link your device id to each user using the **User Device** DocType.
+## Setup
 
-4. Optionally create a notification in Frappe/ERPNext. [(Refer)](https://docs.erpnext.com/docs/v12/user/manual/en/setting-up/notifications)
+1. Go to **FCM Notification Settings** and paste your Firebase service account JSON key.
+   - Obtain it from: Firebase Console > Project Settings > Service Accounts > Generate new private key.
+   - This is **not** the `google-services.json` (which is for client-side Android apps).
 
-5. Run an event that triggers any notification. The notifcation will be send the respetive user via FCM if they have subscribed to it.
+2. Use the **Test Connection** button to verify credentials and OAuth2 token generation.
 
+3. Use the **Send Test Notification** button to send a test push to a registered device.
 
-## Supporting Organization
+## How it Works
 
-The development of this app was commissioned by [Searchosis marketing Pvt Ltd](searchosis.com)
+- The app adds **FCM** as a channel option in the Frappe **Notification** DocType.
+- When a document event matches a Notification rule with channel "FCM", a push notification is sent to the relevant user devices via a background job.
+- Devices are registered via the `fcm_notification.tools.register_device` API endpoint.
 
-<img src="https://user-images.githubusercontent.com/246454/152739360-185e022a-3474-4d4a-9c89-5922bad401c0.png" width="120">
+## DocTypes
+
+| DocType | Description |
+|---------|-------------|
+| **FCM Notification** | Log of sent push notifications |
+| **FCM Notification Settings** | Firebase service account configuration (Single) |
+| **User Device** | Registered devices with FCM tokens |
+
+## API Endpoints
+
+- `fcm_notification.tools.register_device` — Register or update a device for push notifications (requires authentication).
+
+## License
+
+MIT

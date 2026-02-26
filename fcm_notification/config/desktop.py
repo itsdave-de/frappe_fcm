@@ -1,12 +1,11 @@
 from frappe import _
 
+
 def get_data():
 	return [
 		{
 			"module_name": "Fcm Notification",
-			"color": "grey",
-			"icon": "octicon octicon-file-directory",
 			"type": "module",
-			"label": _("Fcm Notification")
+			"label": _("Fcm Notification"),
 		}
 	]

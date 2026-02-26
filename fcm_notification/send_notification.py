@@ -11,8 +11,13 @@ SKIP_DOCTYPES = {"FCM Notification", "FCM Notification Settings", "User Device"}
 
 def send_fcm_message(doc, method):
     """
-    Send a message to Firebase when the status is "NEW".
+    Enqueue FCM delivery when status is "NEW".
     Triggered via doc_events after_insert on FCM Notification.
+
+    Uses frappe.enqueue to move the HTTP request outside the document
+    transaction, avoiding issues with v16's db.commit() restriction
+    in document hooks and preventing data integrity problems if the
+    parent transaction rolls back after the push was already sent.
     """
     if doc.status != "NEW":
         return
@@ -27,9 +32,30 @@ def send_fcm_message(doc, method):
             logger.debug(f"FCM Notification {doc.name}: User Device {doc.user} has no token, skipping.")
             return
 
+    frappe.enqueue(
+        _deliver_fcm_notification,
+        queue="short",
+        job_id=f"fcm_send::{doc.name}",
+        notification_name=doc.name,
+    )
+
+
+def _deliver_fcm_notification(notification_name):
+    """
+    Background job: fetch FCM Notification, obtain credentials, and send
+    push messages to the target device(s).
+    """
+    doc = frappe.get_doc("FCM Notification", notification_name)
+    if doc.status != "NEW":
+        return
+
     service_account_json = frappe.db.get_single_value("FCM Notification Settings", "server_key")
     if not service_account_json:
-        frappe.throw("The service account JSON content is not configured in FCM Notification Settings.")
+        frappe.log_error(
+            title="FCM Notification Config Error",
+            message="The service account JSON content is not configured in FCM Notification Settings.",
+        )
+        return
 
     try:
         service_account_info = json.loads(service_account_json)
@@ -38,13 +64,21 @@ def send_fcm_message(doc, method):
             scopes=["https://www.googleapis.com/auth/firebase.messaging"]
         )
     except Exception as e:
-        frappe.throw(f"Error loading service account credentials: {e}")
+        frappe.log_error(
+            title="FCM Credential Error",
+            message=f"Error loading service account credentials for {notification_name}: {e}",
+        )
+        return
 
     try:
         credentials.refresh(Request())
         access_token = credentials.token
     except Exception as e:
-        frappe.throw(f"Error getting OAuth 2.0 access token: {e}")
+        frappe.log_error(
+            title="FCM OAuth Error",
+            message=f"Error getting OAuth 2.0 access token for {notification_name}: {e}",
+        )
+        return
 
     tokens_to_notify = []
     if doc.all_users:
@@ -79,7 +113,7 @@ def send_fcm_message(doc, method):
         }
 
         try:
-            response = requests.post(url, headers=headers, data=json.dumps(message))
+            response = requests.post(url, headers=headers, data=json.dumps(message), timeout=30)
 
             if response.status_code == 200:
                 logger.info(f"FCM message sent successfully for {doc.name} to token {token_to_notify[:20]}...")
@@ -87,13 +121,13 @@ def send_fcm_message(doc, method):
                 all_sent = False
                 frappe.log_error(
                     title="FCM Notification Send Error",
-                    message=f"Error sending FCM message for {doc.name}: {response.status_code} - {response.text}"
+                    message=f"Error sending FCM message for {doc.name}: {response.status_code} - {response.text}",
                 )
         except Exception as e:
             all_sent = False
             frappe.log_error(
                 title="FCM Notification Request Error",
-                message=f"Exception sending FCM message for {doc.name}: {str(e)}"
+                message=f"Exception sending FCM message for {doc.name}: {str(e)}",
             )
 
     if all_sent:
@@ -171,7 +205,7 @@ def process_document_for_fcm(doc, method):
         except Exception as e:
             frappe.log_error(
                 title="FCM Notification Processing Error",
-                message=f"Error processing notification {notification.name} for {doc.doctype} {doc.name}: {str(e)}"
+                message=f"Error processing notification {notification.name} for {doc.doctype} {doc.name}: {str(e)}",
             )
 
 
@@ -191,8 +225,6 @@ def resolve_notification_recipients(notification_doc, source_doc):
                 context = {"doc": source_doc}
                 if not frappe.safe_eval(row.condition, eval_locals=context):
                     continue
-
-            receiver_by = getattr(row, "receiver_by", None) or getattr(row, "receiver_by_document_field", None) and "Document Field"
 
             if getattr(row, "receiver_by_document_field", None):
                 field_value = source_doc.get(row.receiver_by_document_field)
@@ -219,7 +251,7 @@ def resolve_notification_recipients(notification_doc, source_doc):
         except Exception as e:
             frappe.log_error(
                 title="FCM Recipient Resolution Error",
-                message=f"Error resolving recipient row: {str(e)}"
+                message=f"Error resolving recipient row: {str(e)}",
             )
 
     recipients.discard("Administrator")

@@ -58,6 +58,7 @@ app_license = "MIT"
 
 # before_install = "fcm_notification.install.before_install"
 after_install = "fcm_notification.install.after_install"
+after_migrate = "fcm_notification.install.after_install"
 
 # Uninstallation
 # ------------
