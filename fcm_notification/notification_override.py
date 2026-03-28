@@ -49,14 +49,25 @@ class Notification(_OriginalNotification):
 		users.discard("Guest")
 
 		if not users:
-			# No recipients configured: do nothing (no broadcast)
 			return
 
 		for user_email in users:
-			# Only notify users who have permission to read the document
-			if not frappe.has_permission(
-				doc.doctype, "read", doc=doc.name, user=user_email
-			):
+			# Check permission by temporarily switching the session user.
+			# This is necessary because helpdesk's has_permission uses
+			# frappe.session.user internally (via get_agents_team) instead
+			# of the user parameter passed to frappe.has_permission.
+			original_user = frappe.session.user
+			try:
+				frappe.set_user(user_email)
+				has_perm = frappe.has_permission(
+					doc.doctype, "read", doc=doc.name, user=user_email
+				)
+			except Exception:
+				has_perm = False
+			finally:
+				frappe.set_user(original_user)
+
+			if not has_perm:
 				continue
 
 			user_devices = frappe.get_all(
