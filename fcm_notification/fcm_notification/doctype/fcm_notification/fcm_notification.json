@@ -1,7 +1,7 @@
 {
  "actions": [],
  "allow_rename": 1,
- "autoname": "format:MSG-{#####}",
+ "autoname": "hash",
  "creation": "2025-01-21 12:05:16.340081",
  "default_view": "List",
  "doctype": "DocType",
@@ -67,7 +67,7 @@
  "modified_by": "Administrator",
  "module": "Fcm Notification",
  "name": "FCM Notification",
- "naming_rule": "Expression",
+ "naming_rule": "Random",
  "owner": "Administrator",
  "permissions": [
   {
