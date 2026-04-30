@@ -19,6 +19,11 @@ def send_fcm_message(doc, method):
     in document hooks and preventing data integrity problems if the
     parent transaction rolls back after the push was already sent.
     """
+    from ssc_camp_management.utils.environment import is_dev_system, log_dev_skip
+    if is_dev_system():
+        log_dev_skip("send_fcm_message", f"Push fuer {doc.name} unterdrueckt")
+        return
+
     if doc.status != "NEW":
         return
 
